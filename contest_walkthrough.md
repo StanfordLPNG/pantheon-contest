@@ -1,5 +1,5 @@
 # Replication:
-# # Introduction
+## Introduction
 To replicate a Pantheon experiment in emulation one can run `pantheon/test/run.py` inside a mahimahi container and using the `-r` flag in `pantheon/test/run.py` to connect a remote destination of `$MAHIMAHI_BASE`: `pantheon/test/run.py -r USER@IP:PANTHEON_DIR` makes ssh connections to the remote side and coordinates running each scheme.
 In this case we are ssh-ing into our own machine so you will want to add your own public key to `~/.ssh/authorized_keys` and add self to `~/.ssh/known_hosts`. You should be able to run
 ```
@@ -8,7 +8,7 @@ mm-delay 1 sh -c 'ssh $MAHIMAHI_BASE exit'
 Before proceeding.
 
 
-# # Walkthrough
+## Walkthrough
 I can generate a report for the experiment we are trying to replicate by running `pantheon/analyze/analyze.py --s3-link https://stanford-pantheon.s3.amazonaws.com/real-world-results/Nepal/2017-01-03T21-30-Nepal-to-AWS-India-10-runs-logs.tar.xz`
 Looking at this, I decided to replicate using a 28 ms one way propagation delay and 10 megabits/s link capacity.
 
