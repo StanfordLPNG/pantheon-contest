@@ -1,4 +1,4 @@
-# Replication:
+# Replication Walkthrough
 ## Introduction
 To replicate a Pantheon experiment in emulation one can run `pantheon/test/run.py` inside a mahimahi container and using the `-r` flag in `pantheon/test/run.py` to connect a remote destination of `$MAHIMAHI_BASE`: `pantheon/test/run.py -r USER@IP:PANTHEON_DIR` makes ssh connections to the remote side and coordinates running each scheme.
 In this case we are ssh-ing into our own machine so you will want to add your own public key to `~/.ssh/authorized_keys` and add self to `~/.ssh/known_hosts`. You should be able to run
@@ -8,7 +8,7 @@ mm-delay 1 sh -c 'ssh $MAHIMAHI_BASE exit'
 Before proceeding.
 
 
-## Walkthrough
+## First Replication
 I can generate a report for the experiment we are trying to replicate by running:
 ```
 pantheon/analyze/analyze.py --s3-link https://stanford-pantheon.s3.amazonaws.com/real-world-results/Nepal/2017-01-03T21-30-Nepal-to-AWS-India-10-runs-logs.tar.xz
@@ -17,7 +17,7 @@ Looking at this, I decided to replicate using a 28 ms one way propagation delay 
 
 To perform this emulation in `pantheon/test` I first build all the schemes and install any dependencies by running:
 ```
-./run.py --run-only setup
+pantheon/test/run.py --run-only setup
 ```
 
 
@@ -35,13 +35,14 @@ I will make a file called `10mbps_trace` which will look like this:
 (see man mm-link for details on making an mm-link trace)
 
 
-Now I will run:
+In the `pantheon/test` directory, run:
 ```
 mm-delay 28 mm-link 10mbps_trace 10mbps_trace -- sh -c './run.py -r $USER@$MAHIMAHI_BASE:pantheon --run-only test'
 ```
-and wait patiently...
+and wait patiently to perform the experiment over the emulated link.
 
-Logs of this run like the ones in the archive for Nepal will be in `pantheon/test`, from here we can compare the two experiments in `pantheon/analyze` by running:
+## Analysis
+Logs of this experiment will be in `pantheon/test` directory. from here we can compare the two experiments in `pantheon/analyze` by running:
 ```
 ./compare_two_experiments.py https://stanford-pantheon.s3.amazonaws.com/real-world-results/Nepal/2017-01-03T21-30-Nepal-to-AWS-India-10-runs-logs.tar.xz ../test/
 ```
