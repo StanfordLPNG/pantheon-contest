@@ -1,13 +1,15 @@
 # Replication:
-To replicate an experiment in emulation one can run `pantheon/test/run.py` inside a mahimahi container with a remote destination of `$MAHIMAHI_BASE`. `pantheon/test/run.py -r USER@IP:PANTHEON_DIR` makes ssh connections to the remote side and coordinates running each scheme.
+To replicate a Pantheon experiment in emulation one can run `pantheon/test/run.py` inside a mahimahi container with a remote destination of `$MAHIMAHI_BASE`: `pantheon/test/run.py -r USER@IP:PANTHEON_DIR` makes ssh connections to the remote side and coordinates running each scheme.
 In this case we are ssh-ing into our own machine so you will want to add your own public key to `~/.ssh/authorized_keys`.
 
 
 I can generate a report for the experiment we are trying to replicate by running `pantheon/analyze/analyze.py --s3-link https://stanford-pantheon.s3.amazonaws.com/real-world-results/Nepal/2017-01-03T21-30-Nepal-to-AWS-India-10-runs-logs.tar.xz`
-Looking at this, I decide to replicate using a 28 ms one way propagation delay and 10 megabits/s link capacity.
+Looking at this, I decided to replicate using a 28 ms one way propagation delay and 10 megabits/s link capacity.
 
-
-To perform this emulation in `pantheon/test` I first build all the schemes and install any dependencies by running: `./run.py --run-only setup`
+To perform this emulation in `pantheon/test` I first build all the schemes and install any dependencies by running:
+```
+./run.py --run-only setup
+```
 
 
 In performing tests under emulation I will want to use the `--run-only test` option so I do not try to build and install dependencies from inside the mahimahi shells (and ssh-ing to `$MAHIMAHI_BASE` to do it again on the same machine).
