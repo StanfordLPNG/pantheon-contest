@@ -9,8 +9,11 @@ Before proceeding.
 
 
 ## Walkthrough
-I can generate a report for the experiment we are trying to replicate by running `pantheon/analyze/analyze.py --s3-link https://stanford-pantheon.s3.amazonaws.com/real-world-results/Nepal/2017-01-03T21-30-Nepal-to-AWS-India-10-runs-logs.tar.xz`
-Looking at this, I decided to replicate using a 28 ms one way propagation delay and 10 megabits/s link capacity.
+I can generate a report for the experiment we are trying to replicate by running:
+```
+pantheon/analyze/analyze.py --s3-link https://stanford-pantheon.s3.amazonaws.com/real-world-results/Nepal/2017-01-03T21-30-Nepal-to-AWS-India-10-runs-logs.tar.xz
+```
+Looking at this, I decided to replicate using a 28 ms one way propagation delay and 10 megabits/s constant link capacity.
 
 To perform this emulation in `pantheon/test` I first build all the schemes and install any dependencies by running:
 ```
