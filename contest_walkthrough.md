@@ -92,7 +92,8 @@ greg_saturator             9             1                 % loss rate      3.21
         ledbat            10             1                 % loss rate      0.49      0.00        -100.00%         0.11         0.00        -100.00%
 ```
 
-This is a start, but we can do better. Seeing that all schemes got at least around 0.4% loss I will add this to improve my emulation:
+## Next steps
+This is a start, but we can do better. Seeing from the analysis output that all schemes on the Nepal trace got at least 0.4% loss I will add this to my emulation:
 ```
 mm-delay 28 mm-loss uplink .004 mm-loss downlink .004 mm-link 10mbps_trace 10mbps_trace -- sh -c './run.py -r $USER@$MAHIMAHI_BASE:pantheon --run-only test'
 ```
