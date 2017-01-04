@@ -93,7 +93,7 @@ greg_saturator             9             1                 % loss rate      3.21
 ```
 
 ## Next steps
-This is a start, but we can do better. Seeing from the analysis output that all schemes on the Nepal trace got at least 0.4% loss I will add this to my emulation:
+This is a start, but we can do better. Seeing from the analysis output that all schemes on the Nepal trace got at least 0.4% loss I will add this to my emulation using more mahimahi shells:
 ```
 mm-delay 28 mm-loss uplink .004 mm-loss downlink .004 mm-link 10mbps_trace 10mbps_trace -- sh -c './run.py -r $USER@$MAHIMAHI_BASE:pantheon --run-only test'
 ```
