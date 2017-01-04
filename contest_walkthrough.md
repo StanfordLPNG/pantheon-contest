@@ -147,7 +147,7 @@ greg_saturator             9             1                 % loss rate      3.21
 This actually worked even better than I thought it would! Multiple schemes are withing single digit % differences for throughput and 95th percentile delay.
 
 
-To try to get more loss for high throughput schemes I will add some queueing loss in mm-link. Lets try a 100 packet droptail queue:
+To try to get more loss for high throughput schemes I will add some queueing loss in mm-link. Lets try a 100 packet droptail queue on top of what we have already:
 ```
 mm-delay 28 mm-loss uplink .004 mm-loss downlink .004 mm-link 10mbps_trace 10mbps_trace --uplink-queue="droptail" --uplink-queue-args="packets=50" -- sh -c './run.py -r $USER@$MAHIMAHI_BASE:pantheon --run-only test'
 ```
@@ -197,3 +197,5 @@ greg_saturator             9             1                 % loss rate      3.21
         scream            10             1                 % loss rate      0.39      0.28         -27.72%         0.08         0.00        -100.00%
         ledbat            10             1                 % loss rate      0.49      0.42         -14.86%         0.11         0.00        -100.00%
 ```
+
+This looks a little worse than our previous attempt. I will have to go back to the drawing board to improve from here.
