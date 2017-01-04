@@ -199,3 +199,7 @@ greg_saturator             9             1                 % loss rate      3.21
 ```
 
 This looks a little worse than our previous attempt. I will have to go back to the drawing board to improve from here.
+
+## Note
+This example only did one run for each scheme in an experiment. To start looking at the mean and standard deviation over multiple runs of emulation add `--run-times n` to `run.py`.
+
