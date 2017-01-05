@@ -12,7 +12,7 @@ pantheon/test/run.py --run-only setup
 ```
 
 
-In performing tests under emulation I will want to use the `--run-only test` to avoid re-building schemes in multiple tests.
+In performing tests under emulation I will want to use the `--run-only test` to avoid re-building schemes in multiple experiments.
 
 
 I will make a file called `10mbps_trace` which will look like this:
@@ -89,9 +89,13 @@ This is a start, but we can do better. Seeing from the analysis output that all 
 ./run.py --uplink-trace 10mbps_trace --downlink-trace 10mbps_trace --extra-mm-cmds "mm-delay 28 mm-loss uplink .004 mm-loss downlink .004" --run-only test
 ```
 
-With this `compare_two_experiments.py` gets:
+We can run `compare_two_experiments.py` again and skip downloading and unzipping the logs by running:
 ```
-Comparison of: 2017-01-03T21-30-Nepal-to-AWS-India-10-runs-logs and ../test
+./compare_two_experiments.py 2017-01-03T21-30-Nepal-to-AWS-India-10-runs-logs ../test/
+```
+This returns:
+```
+Comparison of: 2017-01-03T21-30-Nepal-to-AWS-India-10-runs-logs and ../test/
         scheme    exp 1 runs    exp 2 runs            aggregate metric    mean 1    mean 2    % difference    std dev 1    std dev 2    % difference
 --------------  ------------  ------------  --------------------------  --------  --------  --------------  -----------  -----------  --------------
      saturator            10             1         throughput (Mbit/s)      9.57      9.27          -3.12%         0.08         0.00        -100.00%
@@ -191,7 +195,7 @@ greg_saturator             9             1                 % loss rate      3.21
 
 This looks a little worse than our previous attempt. I will have to go back to the drawing board to improve from here.
 
-## Comparing to multi-run experiments
+## Doing multi-run experiments
 The Nepal experiment ran all 13 congestion control schemes 10 times.
 I will take more time and run the second emulation experiment 10 times by running:
 ```
@@ -199,7 +203,7 @@ I will take more time and run the second emulation experiment 10 times by runnin
 ```
 Now running `compare_two_experiments.py` I can look at the standard deviation of our emulated throughputs, 95th percentile delays, and loss rates:
 ```
-Comparison of: 2017-01-03T21-30-Nepal-to-AWS-India-10-runs-logs and ../test
+Comparison of: 2017-01-03T21-30-Nepal-to-AWS-India-10-runs-logs and ../test/
         scheme    exp 1 runs    exp 2 runs            aggregate metric    mean 1    mean 2    % difference    std dev 1    std dev 2    % difference
 --------------  ------------  ------------  --------------------------  --------  --------  --------------  -----------  -----------  --------------
      saturator            10            10         throughput (Mbit/s)      9.57      9.29          -2.89%         0.08         0.01         -84.54%
