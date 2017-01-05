@@ -195,7 +195,33 @@ greg_saturator             9             1                 % loss rate      3.21
 
 This looks a little worse than our previous attempt. I will have to go back to the drawing board to improve from here.
 
-## Doing multi-run experiments
+## Speeding things up
+You can run a subset of the 13 schemes in the Pantheon with the `--schemes` argument.
+For example:
+```
+./run.py --run-only test --schemes "default_tcp vegas ledbat pcc" --uplink-trace 10mbps_trace --downlink-trace 10mbps_trace --extra-mm-cmds "mm-delay 28"
+```
+`compare_two_experiments.py` will compare the intersection of schemes used in the two experiments:
+
+```
+Comparison of: 2017-01-03T21-30-Nepal-to-AWS-India-10-runs-logs and ../test/
+     scheme    exp 1 runs    exp 2 runs            aggregate metric    mean 1    mean 2    % difference    std dev 1    std dev 2    % difference
+-----------  ------------  ------------  --------------------------  --------  --------  --------------  -----------  -----------  --------------
+        pcc            10             1         throughput (Mbit/s)      6.61      7.69         +16.48%         1.86         0.00        -100.00%
+      vegas            10             1         throughput (Mbit/s)      4.04      9.30        +130.25%         0.97         0.00        -100.00%
+default_tcp            10             1         throughput (Mbit/s)      5.08      9.31         +83.39%         1.16         0.00        -100.00%
+     ledbat            10             1         throughput (Mbit/s)      4.68      9.08         +93.87%         0.54         0.00        -100.00%
+        pcc            10             1  95th percentile delay (ms)     69.96    249.17        +256.15%        29.09         0.00        -100.00%
+      vegas            10             1  95th percentile delay (ms)    126.93    139.88         +10.20%        83.59         0.00        -100.00%
+default_tcp            10             1  95th percentile delay (ms)     57.70   2029.53       +3417.46%        40.99         0.00        -100.00%
+     ledbat            10             1  95th percentile delay (ms)     43.53    128.14        +194.39%         1.79         0.00        -100.00%
+        pcc            10             1                 % loss rate      1.50      0.11         -92.82%         0.86         0.00        -100.00%
+      vegas            10             1                 % loss rate      1.16      0.12         -89.22%         1.04         0.00        -100.00%
+default_tcp            10             1                 % loss rate      0.51      3.48        +587.31%         0.10         0.00        -100.00%
+     ledbat            10             1                 % loss rate      0.49      0.43         -13.11%         0.11         0.00        -100.00%
+```
+
+## Slowing things down
 The Nepal experiment ran all 13 congestion control schemes 10 times.
 I will take more time and run the second emulation experiment 10 times by running:
 ```
