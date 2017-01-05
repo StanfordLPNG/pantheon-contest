@@ -1,14 +1,5 @@
 # Replication Walkthrough
-## Introduction
-To replicate a Pantheon experiment in emulation one can run `pantheon/test/run.py` inside a mahimahi container and using the `-r` flag in `pantheon/test/run.py` to connect a remote destination of `$MAHIMAHI_BASE`: `pantheon/test/run.py -r USER@IP:PANTHEON_DIR` makes ssh connections to the remote side and coordinates running each scheme.
-In this case we are ssh-ing into our own machine so you will want to add your own public key to `~/.ssh/authorized_keys` and add self to `~/.ssh/known_hosts`. You should be able to run
-```
-mm-delay 1 sh -c 'ssh $MAHIMAHI_BASE exit'
-```
-Before proceeding.
-
-
-## First Replication
+## First Steps
 I can generate a report for the experiment we are trying to replicate by running:
 ```
 pantheon/analyze/analyze.py --s3-link https://stanford-pantheon.s3.amazonaws.com/real-world-results/Nepal/2017-01-03T21-30-Nepal-to-AWS-India-10-runs-logs.tar.xz
@@ -21,7 +12,7 @@ pantheon/test/run.py --run-only setup
 ```
 
 
-In performing tests under emulation I will want to use the `--run-only test` option so I do not try to build and install dependencies from inside the mahimahi shells (and ssh-ing to `$MAHIMAHI_BASE` to do it again on the same machine).
+In performing tests under emulation I will want to use the `--run-only test` to avoid re-building schemes in multiple tests.
 
 
 I will make a file called `10mbps_trace` which will look like this:
@@ -37,7 +28,7 @@ I will make a file called `10mbps_trace` which will look like this:
 
 In the `pantheon/test` directory, run:
 ```
-mm-delay 28 mm-link 10mbps_trace 10mbps_trace -- sh -c './run.py -r $USER@$MAHIMAHI_BASE:pantheon --run-only test'
+./run.py --uplink-trace 10mbps_trace --downlink-trace 10mbps_trace --extra-mm-cmds "mm-delay 28" --run-only test
 ```
 and wait patiently to perform the experiment over the emulated link.
 
@@ -95,7 +86,7 @@ greg_saturator             9             1                 % loss rate      3.21
 ## Next steps
 This is a start, but we can do better. Seeing from the analysis output that all schemes on the Nepal trace got at least 0.4% loss I will add this to my emulation using more mahimahi shells:
 ```
-mm-delay 28 mm-loss uplink .004 mm-loss downlink .004 mm-link 10mbps_trace 10mbps_trace -- sh -c './run.py -r $USER@$MAHIMAHI_BASE:pantheon --run-only test'
+./run.py --uplink-trace 10mbps_trace --downlink-trace 10mbps_trace --extra-mm-cmds "mm-delay 28 mm-loss uplink .004 mm-loss downlink .004" --run-only test
 ```
 
 With this `compare_two_experiments.py` gets:
@@ -149,7 +140,7 @@ This actually worked even better than I thought it would! Multiple schemes are w
 
 To try to get more loss for high throughput schemes I will add some queueing loss in mm-link. Lets try a 100 packet droptail queue on top of what we have already:
 ```
-mm-delay 28 mm-loss uplink .004 mm-loss downlink .004 mm-link 10mbps_trace 10mbps_trace --uplink-queue="droptail" --uplink-queue-args="packets=50" -- sh -c './run.py -r $USER@$MAHIMAHI_BASE:pantheon --run-only test'
+./run.py --uplink-trace 10mbps_trace --downlink-trace 10mbps_trace --extra-mm-cmds "mm-delay 28 mm-loss uplink .004 mm-loss downlink .004" --extra-mm-link-args "--uplink-queue=droptail --uplink-queue-args=packets=50" --run-only test
 ```
 
 This gets:
@@ -200,6 +191,54 @@ greg_saturator             9             1                 % loss rate      3.21
 
 This looks a little worse than our previous attempt. I will have to go back to the drawing board to improve from here.
 
-## Note
-This example only did one run for each scheme in an experiment. To start looking at the mean and standard deviation over multiple runs of emulation add `--run-times n` to `run.py`.
-
+## Comparing to multi-run experiments
+The Nepal experiment ran all 13 congestion control schemes 10 times.
+I will take more time and run the second emulation experiment 10 times by running:
+```
+./run.py --uplink-trace 10mbps_trace --downlink-trace 10mbps_trace --extra-mm-cmds "mm-delay 28 mm-loss uplink .004 mm-loss downlink .004" --run-only test --run-times 10
+```
+Now running `compare_two_experiments.py` I can look at the standard deviation of our emulated throughputs, 95th percentile delays, and loss rates:
+```
+Comparison of: 2017-01-03T21-30-Nepal-to-AWS-India-10-runs-logs and ../test
+        scheme    exp 1 runs    exp 2 runs            aggregate metric    mean 1    mean 2    % difference    std dev 1    std dev 2    % difference
+--------------  ------------  ------------  --------------------------  --------  --------  --------------  -----------  -----------  --------------
+     saturator            10            10         throughput (Mbit/s)      9.57      9.29          -2.89%         0.08         0.01         -84.54%
+          copa            10            10         throughput (Mbit/s)      1.92      4.10        +113.52%         0.11         0.68        +510.21%
+          quic            10            10         throughput (Mbit/s)      1.19      1.15          -3.37%         0.15         0.03         -80.52%
+       koho_cc            10            10         throughput (Mbit/s)      8.90      9.03          +1.38%         0.14         0.06         -59.13%
+        webrtc            10            10         throughput (Mbit/s)      2.86      2.59          -9.35%         0.50         0.48          -4.05%
+         vegas            10            10         throughput (Mbit/s)      4.04      3.49         -13.71%         0.97         0.39         -59.56%
+   default_tcp            10            10         throughput (Mbit/s)      5.08      3.53         -30.52%         1.16         0.36         -69.16%
+         verus            10            10         throughput (Mbit/s)      9.24      7.92         -14.26%         0.22         0.21          -5.26%
+        sprout            10            10         throughput (Mbit/s)      4.80      4.57          -4.70%         0.75         0.26         -65.88%
+greg_saturator             9            10         throughput (Mbit/s)      9.34      9.09          -2.70%         0.11         0.02         -85.96%
+           pcc            10            10         throughput (Mbit/s)      6.61      6.29          -4.80%         1.86         1.94          +4.49%
+        scream            10            10         throughput (Mbit/s)      0.75      0.59         -20.55%         0.10         0.08         -21.00%
+        ledbat            10            10         throughput (Mbit/s)      4.68      5.35         +14.13%         0.54         0.34         -35.70%
+     saturator            10            10  95th percentile delay (ms)    220.21    211.70          -3.87%         5.57         0.29         -94.74%
+          copa            10            10  95th percentile delay (ms)     37.25     33.70          -9.53%         0.73         0.67          -8.60%
+          quic            10            10  95th percentile delay (ms)     39.27     36.81          -6.27%         0.73         0.43         -41.28%
+       koho_cc            10            10  95th percentile delay (ms)     54.09     57.64          +6.57%         3.46         0.86         -75.15%
+        webrtc            10            10  95th percentile delay (ms)     43.95     40.41          -8.06%         4.18         2.23         -46.58%
+         vegas            10            10  95th percentile delay (ms)    126.93     54.99         -56.68%        83.59        35.93         -57.02%
+   default_tcp            10            10  95th percentile delay (ms)     57.70     83.39         +44.52%        40.99        57.17         +39.48%
+         verus            10            10  95th percentile delay (ms)    214.34     60.24         -71.90%        38.59         9.01         -76.66%
+        sprout            10            10  95th percentile delay (ms)     57.12     54.03          -5.40%         0.56         0.52          -6.62%
+greg_saturator             9            10  95th percentile delay (ms)    271.54    288.61          +6.29%         9.00         0.82         -90.83%
+           pcc            10            10  95th percentile delay (ms)     69.96    140.81        +101.27%        29.09       117.83        +305.03%
+        scream            10            10  95th percentile delay (ms)     36.34     31.72         -12.73%         0.53         0.42         -19.91%
+        ledbat            10            10  95th percentile delay (ms)     43.53     42.63          -2.07%         1.79         3.97        +121.86%
+     saturator            10            10                 % loss rate      1.41      1.10         -21.90%         0.30         0.06         -81.32%
+          copa            10            10                 % loss rate      0.41      0.47         +14.31%         0.08         0.06         -30.96%
+          quic            10            10                 % loss rate      0.45      0.55         +20.94%         0.11         0.12          +8.75%
+       koho_cc            10            10                 % loss rate      0.60      0.54          -9.81%         0.13         0.05         -62.53%
+        webrtc            10            10                 % loss rate      0.76      0.54         -29.05%         0.30         0.11         -62.90%
+         vegas            10            10                 % loss rate      1.16      0.55         -52.68%         1.04         0.09         -91.06%
+   default_tcp            10            10                 % loss rate      0.51      0.53          +4.58%         0.10         0.06         -46.08%
+         verus            10            10                 % loss rate      2.69      0.49         -81.76%         1.31         0.05         -96.40%
+        sprout            10            10                 % loss rate      0.66      0.51         -23.46%         0.22         0.10         -53.63%
+greg_saturator             9            10                 % loss rate      3.21      1.43         -55.46%         0.89         0.03         -96.64%
+           pcc            10            10                 % loss rate      1.50      0.50         -66.89%         0.86         0.06         -93.19%
+        scream            10            10                 % loss rate      0.39      0.48         +23.48%         0.08         0.13         +59.06%
+        ledbat            10            10                 % loss rate      0.49      0.53          +7.99%         0.11         0.06         -46.85%
+```
