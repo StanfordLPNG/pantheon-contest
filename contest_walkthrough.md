@@ -28,7 +28,7 @@ I will make a file called `10mbps_trace` which will look like this:
 
 In the `pantheon/test` directory, run:
 ```
-./run.py --uplink-trace 10mbps_trace --downlink-trace 10mbps_trace --extra-mm-cmds "mm-delay 28" --run-only test
+./run.py --uplink-trace 10mbps_trace --downlink-trace 10mbps_trace --prepend-mm-cmds "mm-delay 28" --run-only test
 ```
 and wait patiently to perform the experiment over the emulated link.
 
@@ -86,7 +86,7 @@ greg_saturator             9             1                 % loss rate      3.21
 ## Next steps
 This is a start, but we can do better. Seeing from the analysis output that all schemes on the Nepal trace got at least 0.4% loss I will add this to my emulation using more mahimahi shells:
 ```
-./run.py --uplink-trace 10mbps_trace --downlink-trace 10mbps_trace --extra-mm-cmds "mm-delay 28 mm-loss uplink .004 mm-loss downlink .004" --run-only test
+./run.py --uplink-trace 10mbps_trace --downlink-trace 10mbps_trace --prepend-mm-cmds "mm-delay 28 mm-loss uplink .004 mm-loss downlink .004" --run-only test
 ```
 
 We can run `compare_two_experiments.py` again and skip downloading and unzipping the logs by running:
@@ -144,7 +144,7 @@ This actually worked even better than I thought it would! Multiple schemes are w
 
 To try to get more loss for high throughput schemes I will add some queueing loss in mm-link. Lets try a 100 packet droptail queue on top of what we have already:
 ```
-./run.py --uplink-trace 10mbps_trace --downlink-trace 10mbps_trace --extra-mm-cmds "mm-delay 28 mm-loss uplink .004 mm-loss downlink .004" --extra-mm-link-args "--uplink-queue=droptail --uplink-queue-args=packets=50" --run-only test
+./run.py --uplink-trace 10mbps_trace --downlink-trace 10mbps_trace --prepend-mm-cmds "mm-delay 28 mm-loss uplink .004 mm-loss downlink .004" --extra-mm-link-args "--uplink-queue=droptail --uplink-queue-args=packets=50" --run-only test
 ```
 
 This gets:
@@ -199,7 +199,7 @@ This looks a little worse than our previous attempt. I will have to go back to t
 You can run a subset of the 13 schemes in the Pantheon with the `--schemes` argument.
 For example:
 ```
-./run.py --run-only test --schemes "default_tcp vegas ledbat pcc" --uplink-trace 10mbps_trace --downlink-trace 10mbps_trace --extra-mm-cmds "mm-delay 28"
+./run.py --run-only test --schemes "default_tcp vegas ledbat pcc" --uplink-trace 10mbps_trace --downlink-trace 10mbps_trace --prepend-mm-cmds "mm-delay 28"
 ```
 `compare_two_experiments.py` will compare the intersection of schemes used in the two experiments:
 
@@ -225,7 +225,7 @@ default_tcp            10             1                 % loss rate      0.51   
 The Nepal experiment ran all 13 congestion control schemes 10 times.
 I will take more time and run the second emulation experiment 10 times by running:
 ```
-./run.py --uplink-trace 10mbps_trace --downlink-trace 10mbps_trace --extra-mm-cmds "mm-delay 28 mm-loss uplink .004 mm-loss downlink .004" --run-only test --run-times 10
+./run.py --uplink-trace 10mbps_trace --downlink-trace 10mbps_trace --prepend-mm-cmds "mm-delay 28 mm-loss uplink .004 mm-loss downlink .004" --run-only test --run-times 10
 ```
 Now running `compare_two_experiments.py` I can look at the standard deviation of our emulated throughputs, 95th percentile delays, and loss rates:
 ```
